@@ -11,7 +11,7 @@ app.use(cors()) //para habilitar CORS y que se pueda hacer peticiones desde el n
 app.use(morgan('dev')) //para que muestre en consola información de la petición
 
 //aqui van las rutas
-app.use('/entidad', router)
+app.use('/tarea', router)
 
 
 //app escuchando el puerto

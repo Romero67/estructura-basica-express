@@ -70,15 +70,41 @@ exports.crearTarea = (request, response) => {
 
 exports.eliminarTarea = (request, response) => {
 
-    const { id } = request.params
+    try {
+        const { id } = request.params
 
-    listaEntidades.forEach(entidad => {
-        if(entidad.id == id){
-            entidad.borrado = true
-        }
-    })
+        listaEntidades.forEach(entidad => {
+            if(entidad.id == id){
+                entidad.borrado = true
+            }
+        })
 
-    return response.status(200).send(`tarea con id: ${id}, eliminada`);
+        return response.status(200).send(`tarea con id: ${id}, eliminada`);
+    } catch (error) {
+        return response.status(500).send({ success: false, message: "Error en el servidor" });
+    }
 };
 
 //TODO: ACTUALIZAR TAREA
+exports.actualizarTarea = (request, response) => {
+    try {
+        const {id} = request.params
+
+        const { titulo, descripcion, hecho } = request.body
+
+        listaEntidades.forEach(tarea => {
+            if(tarea.id == id){
+                tarea.titulo = titulo ? titulo : tarea.titulo
+                tarea.descripcion = descripcion ? descripcion : tarea.descripcion
+                tarea.hecho = hecho ? hecho : tarea.hecho
+            }
+        })
+
+        return response.status(200).send({success: true, message: 'Tarea actualizada!'})
+
+    } catch (error) {
+        console.log("error servidor: ",error)
+        return response.status(500).send({ success: false, message: "Error en el servidor" });
+    }
+
+}
