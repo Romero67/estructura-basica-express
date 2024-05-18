@@ -1,42 +1,21 @@
-//definición de lista de entidades
-const listaEntidades = [
-    {
-        id: 1, //lo proporciona el servidor
-        borrado: false,
-        //... aqui van las demás propiedades
-        titulo: "estudiar programación", //lo proporciona el front
-        descripcion: "Estudiar por la mañana tomando matecitos", //lo proporciona el front
-        hecho: false,
-    },
-    {
-        id: 2, //lo proporciona el servidor
-        borrado: false,
-        //... aqui van las demás propiedades
-        titulo: "estudiar programación", //lo proporciona el front
-        descripcion: "Estudiar por la mañana tomando matecitos", //lo proporciona el front
-        hecho: false,
-    },
-    {
-        id: 3, //lo proporciona el servidor
-        borrado: false,
-        //... aqui van las demás propiedades
-        titulo: "estudiar programación", //lo proporciona el front
-        descripcion: "Estudiar por la mañana tomando matecitos", //lo proporciona el front
-        hecho: false,
-    }
-];
+const {ModelTarea} = require('../models/tarea.model')
 
 //funcion controladora que devuelve la lista de entidades
-exports.obtenerLista = (req, res) => {
+exports.obtenerLista = async (req, res) => {
     try {
-        return res.status(200).send({ success: true, data: listaEntidades });
+
+        const tareas = await ModelTarea.find()
+
+        console.log("tareas: ",tareas)
+
+        return res.status(200).send({ success: true, data: tareas });
     } catch (error) {
         console.log("[obtenerLista] Error fatal: ", error);
         return res.status(500).send({ success: false, message: "Error en el servidor" });
     }
 };
 
-exports.crearTarea = (request, response) => {
+exports.crearTarea =  async (request, response) => {
     //aqui va la lógica de agregar la entidad al array (listaEntidades)
     //obtener datos del body - OK
     //creen un objeto en base a esos datos - OK
@@ -49,17 +28,16 @@ exports.crearTarea = (request, response) => {
             return response.status(400).send({ success: false, message: 'Faltan datos'})
         }
 
-        const id = listaEntidades.length + 1
-
-        const nuevaTarea = {
-            id: id,
+        const nuevaTarea = new ModelTarea({
             borrado: false,
             titulo: titulo,
             descripcion: descripcion,
             hecho: false
-        }
+        })
 
-        listaEntidades.push(nuevaTarea)
+        console.log("nueva tarea: ",nuevaTarea)
+
+        await nuevaTarea.save()
 
         return response.status(200).send("tarea creada!");
     } catch (error) {
@@ -68,16 +46,15 @@ exports.crearTarea = (request, response) => {
     }
 };
 
-exports.eliminarTarea = (request, response) => {
+exports.eliminarTarea = async (request, response) => {
 
     try {
         const { id } = request.params
 
-        listaEntidades.forEach(entidad => {
-            if(entidad.id == id){
-                entidad.borrado = true
-            }
-        })
+        const query = {_id: id}
+        const update = {borrado: true}
+
+        await ModelTarea.updateOne(query, update)
 
         return response.status(200).send(`tarea con id: ${id}, eliminada`);
     } catch (error) {
@@ -86,19 +63,19 @@ exports.eliminarTarea = (request, response) => {
 };
 
 //TODO: ACTUALIZAR TAREA
-exports.actualizarTarea = (request, response) => {
+exports.actualizarTarea = async (request, response) => {
     try {
         const {id} = request.params
 
         const { titulo, descripcion, hecho } = request.body
+        const query = {_id: id}
+        const update = {}
 
-        listaEntidades.forEach(tarea => {
-            if(tarea.id == id){
-                tarea.titulo = titulo ? titulo : tarea.titulo
-                tarea.descripcion = descripcion ? descripcion : tarea.descripcion
-                tarea.hecho = hecho ? hecho : tarea.hecho
-            }
-        })
+        if(titulo) update.titulo = titulo
+        if(descripcion) update.descripcion = descripcion
+        if(hecho) update.hecho = hecho
+
+        await ModelTarea.updateOne(query, update)
 
         return response.status(200).send({success: true, message: 'Tarea actualizada!'})
 
