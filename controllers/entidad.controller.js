@@ -39,7 +39,7 @@ exports.crearTarea =  async (request, response) => {
 
         await nuevaTarea.save()
 
-        return response.status(200).send("tarea creada!");
+        return response.status(200).send({ success: true, data: "Tarea Creada!" });
     } catch (error) {
         console.log("error servidor: ",error)
         return response.status(500).send({ success: false, message: "Error en el servidor" });
