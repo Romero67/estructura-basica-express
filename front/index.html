@@ -91,6 +91,7 @@
             align-items: center;
             border-radius: 6px;
             cursor: pointer;
+            column-gap: 5px;
         }
 
         .item:hover{
@@ -126,6 +127,7 @@
         }
 
         .formulario{
+            max-height: 250px;
             border-radius: 8px;
             padding: 20px;
             display: flex;
@@ -279,19 +281,59 @@
             for (let i = 0; i < res.data.length; i++) {
                 const tarea = res.data[i];
                 
-                itemsHtml += getHtmlItem(tarea.titulo)
+                itemsHtml += getHtmlItem(tarea.titulo, tarea._id)
             }
 
+            //aqui metemos todos los items en la lista
             containerItems.innerHTML = itemsHtml
+
+            //inicializar los botones eliminar
+            initDeleteButtons()
         }
 
-        function getHtmlItem(titulo){
+        function initDeleteButtons(){
+            const buttons = document.querySelectorAll('.btn_eliminar')
+
+            if(!buttons){
+                console.log("no hay botones")
+                return
+            }
+
+            for (let i = 0; i < buttons.length; i++) {
+                const button = buttons[i];
+                
+                button.addEventListener('click', handleClickDeleteButton)
+            }
+        }
+
+        async function handleClickDeleteButton(event) {
+            const idTarea = event.target.getAttribute('data-idtarea')
+
+            const res = await fetch(`${url_api}/tarea/eliminar/${idTarea}`,{
+                method: 'PATCH'
+            })
+
+            const data = await res.json()
+
+
+            if(data.error){
+                console.log("Error al eliminar: ",error.messge)
+                alert('ocurrio un error al eliminar')
+                return
+            }
+
+            alert(`tarea con id ${idTarea} eliminada correctamente`)
+
+            await initList()
+        }
+
+        function getHtmlItem(titulo, idTarea){
             const html = `
                 <li class="item">
                     <p>${titulo}</p>
                     <div class="actions">
                         <button class="btn_item btn_editar">editar</button>
-                        <button class="btn_item btn_eliminar">eliminar</button>
+                        <button class="btn_item btn_eliminar" data-idtarea="${idTarea}">eliminar</button>
                     </div>
                 </li>
             `

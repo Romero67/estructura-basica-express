@@ -4,7 +4,7 @@ const {ModelTarea} = require('../models/tarea.model')
 exports.obtenerLista = async (req, res) => {
     try {
 
-        const tareas = await ModelTarea.find()
+        const tareas = await ModelTarea.find({borrado: false})
 
         console.log("tareas: ",tareas)
 
@@ -56,7 +56,7 @@ exports.eliminarTarea = async (request, response) => {
 
         await ModelTarea.updateOne(query, update)
 
-        return response.status(200).send(`tarea con id: ${id}, eliminada`);
+        return response.status(200).send({succes: true, message: `tarea con id: ${id}, eliminada`});
     } catch (error) {
         return response.status(500).send({ success: false, message: "Error en el servidor" });
     }
