@@ -19,6 +19,7 @@
 
 
             <form class="formulario" id="formulario">
+                <input type="text" name="" id="txt_id" hidden>
                 <div class="form_field">
                     <label for="txt_titulo">Titulo</label>
                     <input type="text" name="" id="txt_titulo">
@@ -197,6 +198,7 @@
     <script>
         const url_api = 'http://localhost:5000'
         window.onload = initApp()
+        let TAREAS = null
 
         async function initApp(){
 
@@ -221,6 +223,7 @@
 
             const inputTitle = document.querySelector('#txt_titulo')
             const inputDescription = document.querySelector('#txt_descripcion')
+            const inputId = document.querySelector('#txt_id')
 
             if(!inputTitle || !inputTitle.value){
                 alert('no tiene valor el titulo')
@@ -231,25 +234,56 @@
                 return
             }
 
-            const res = await fetch(`${url_api}/tarea/crear`,{
-                method: 'POST',
-                headers: {
-                    "Content-Type": 'application/json'
-                },
-                body: JSON.stringify({titulo: inputTitle.value, descripcion: inputDescription.value})
-            })
+            let res = null
+
+            if(inputId && inputId.value){
+                res = await actualizarTarea(
+                    inputTitle.value,
+                    inputDescription.value,
+                    inputId.value
+                )
+            }else{
+                res = await crearTarea(
+                    inputTitle.value,
+                    inputDescription.value,
+                )
+            }
 
             const data = await res.json()
 
-            if(!res.ok){
+            if(!data.success){
                 console.log(res.messge)
                 return
             }
 
             cleanInput(inputTitle)
             cleanInput(inputDescription)
+            cleanInput(inputId)
 
             await initList()
+        }
+
+        async function actualizarTarea(titulo, descripcion, idTarea){
+            const res = await fetch(`${url_api}/tarea/actualizar/${idTarea}`,{
+                method: 'PUT',
+                headers: {
+                    "Content-Type": 'application/json'
+                },
+                body: JSON.stringify({titulo, descripcion})
+            })
+
+            return res
+        }
+        async function crearTarea(titulo, descripcion){
+            const res = await fetch(`${url_api}/tarea/crear`,{
+                method: 'POST',
+                headers: {
+                    "Content-Type": 'application/json'
+                },
+                body: JSON.stringify({titulo, descripcion})
+            })
+
+            return res
         }
 
         function cleanInput(inputHtml){
@@ -277,6 +311,7 @@
             }
 
             let itemsHtml = ""
+            TAREAS = res.data
 
             for (let i = 0; i < res.data.length; i++) {
                 const tarea = res.data[i];
@@ -289,6 +324,42 @@
 
             //inicializar los botones eliminar
             initDeleteButtons()
+
+            //inicializamos los botones de actualizar
+            initUpdateButtons()
+        }
+
+        function initUpdateButtons(){
+            const buttons = document.querySelectorAll('.btn_editar')
+
+            if(!buttons){
+                console.log("no hay botones")
+                return
+            }
+
+            for (let i = 0; i < buttons.length; i++) {
+                const button = buttons[i];
+                
+                button.addEventListener('click', handleClickUpdateButton)
+            }
+        }
+
+        function handleClickUpdateButton(event){
+            const idTarea = event.target.getAttribute('data-idtarea')
+
+            const tarea = TAREAS.find(x => x._id == idTarea)
+
+            fillForm(tarea.titulo, tarea.descripcion, tarea._id)
+        }
+
+        function fillForm(titulo, descripcion, idTarea){
+            const txtTitulo = document.querySelector('#txt_titulo')
+            const txtDescripcion = document.querySelector('#txt_descripcion')
+            const txtId = document.querySelector('#txt_id')
+
+            txtTitulo.value = titulo
+            txtDescripcion.value = descripcion
+            txtId.value = idTarea
         }
 
         function initDeleteButtons(){
@@ -332,7 +403,7 @@
                 <li class="item">
                     <p>${titulo}</p>
                     <div class="actions">
-                        <button class="btn_item btn_editar">editar</button>
+                        <button class="btn_item btn_editar" data-idtarea="${idTarea}">editar</button>
                         <button class="btn_item btn_eliminar" data-idtarea="${idTarea}">eliminar</button>
                     </div>
                 </li>
