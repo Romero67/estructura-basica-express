@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+
+    <title>To do List APP</title>
+</head>
+<body>
+    
+    <div class="container">
+        <h1>ToDo List</h1>
+
+        <div class="main">
+
+
+            <form class="formulario" id="formulario">
+                <div class="form_field">
+                    <label for="txt_titulo">Titulo</label>
+                    <input type="text" name="" id="txt_titulo">
+                </div>
+                <div class="form_field">
+                    <label for="txt_descripcion">Descripción</label>
+                    <input type="text" name="" id="txt_descripcion">
+                </div>
+
+                <button type="submit" class="btn_submit">Enviar</button>
+
+            </form>
+
+            <div class="lista">
+                <h2>Tareas</h2>
+
+                <ul class="items">
+                    <!-- ESTO SE LLENA CON LOS DATOS DEL BACKEND -->
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <style>
+
+        .item .actions{
+            flex: 1;
+            display: flex;
+            justify-content: end;
+            column-gap: 10px;
+        }
+        .item p{
+            flex: 1;
+        }
+
+        .btn_editar:hover{
+            background-color: rgba(0,0,255,.2);
+            color: white;
+        }
+        .btn_eliminar:hover{
+            color: white;
+            background-color: rgba(255,0,0,.2);
+        }
+
+        .btn_item{
+            padding: 5px 10px;
+            font-weight: 700;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn_submit{
+            font-weight: 700;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .item{
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            align-items: center;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .item:hover{
+            background-color: rgba(0,0,0,.2);
+        }
+
+        .items{
+            display: flex;
+            flex-direction: column;
+            row-gap: 20px;
+            list-style: none;
+        }
+
+        .lista{
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            row-gap: 20px;
+            width: 100%;
+            box-shadow: 5px 6px 29px 0px rgba(0,0,0,0.75);
+            -webkit-box-shadow: 5px 6px 29px 0px rgba(0,0,0,0.75);
+            -moz-box-shadow: 5px 6px 29px 0px rgba(0,0,0,0.75);
+        }
+
+        .form_field label{
+            margin-bottom: 5px;
+        }
+
+        .form_field{
+            display: flex;
+            flex-direction: column;
+        }
+
+        .formulario{
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            row-gap: 20px;
+            width: 100%;
+            box-shadow: 5px 6px 29px 0px rgba(0,0,0,0.75);
+            -webkit-box-shadow: 5px 6px 29px 0px rgba(0,0,0,0.75);
+            -moz-box-shadow: 5px 6px 29px 0px rgba(0,0,0,0.75);
+        }
+
+        .main{
+            display: flex;
+            flex-direction: column;
+            row-gap: 40px;
+        }
+
+        h1{
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .container{
+            padding: 20px;
+            padding-top: 50px;
+            max-width: 1440px;
+            margin: auto;
+        }
+
+        body{
+            background-color: #352f5b;
+            color: white;
+        }
+
+        *{
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family: "Josefin Sans", sans-serif;
+        }
+
+        input{
+            background: rgba(0, 0, 0, 0.2);
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+        }
+
+        input:focus{
+            outline: none;
+        }
+
+        @media (min-width: 1024px){
+            .main{
+                flex-direction: row;
+                column-gap: 40px;
+            }
+
+            h1{
+                font-size: 42px;
+            }
+        }
+
+    </style>
+
+    <script>
+        const url_api = 'http://localhost:5000'
+        window.onload = initApp()
+
+        async function initApp(){
+
+            await initList()
+            initForm()
+
+        }
+
+        function initForm(){
+            const formulario = document.querySelector('#formulario')
+
+            if(!formulario){
+                console.log('No existe formulario')
+                return
+            }
+
+            formulario.addEventListener('submit', handleSubmit)
+        }
+
+        async function handleSubmit(e){
+            e.preventDefault()
+
+            const inputTitle = document.querySelector('#txt_titulo')
+            const inputDescription = document.querySelector('#txt_descripcion')
+
+            if(!inputTitle || !inputTitle.value){
+                alert('no tiene valor el titulo')
+                return
+            }
+            if(!inputDescription || !inputDescription.value){
+                alert('no tiene valor la descripción')
+                return
+            }
+
+            const res = await fetch(`${url_api}/tarea/crear`,{
+                method: 'POST',
+                headers: {
+                    "Content-Type": 'application/json'
+                },
+                body: JSON.stringify({titulo: inputTitle.value, descripcion: inputDescription.value})
+            })
+
+            const data = await res.json()
+
+            if(!res.ok){
+                console.log(res.messge)
+                return
+            }
+
+            cleanInput(inputTitle)
+            cleanInput(inputDescription)
+
+            await initList()
+        }
+
+        function cleanInput(inputHtml){
+            inputHtml.value = ''
+        }
+
+        async function initList(){
+            const containerItems = document.querySelector('.lista .items')
+
+            if(!containerItems){
+                console.log("no existe div de items")
+                return
+            }
+
+            const res = await getListData()
+
+            if(!res.ok){
+                console.log(res.messge)
+                return
+            }
+
+            if(!Array.isArray(res.data)){
+                console.log("no es array")
+                return
+            }
+
+            let itemsHtml = ""
+
+            for (let i = 0; i < res.data.length; i++) {
+                const tarea = res.data[i];
+                
+                itemsHtml += getHtmlItem(tarea.titulo)
+            }
+
+            containerItems.innerHTML = itemsHtml
+        }
+
+        function getHtmlItem(titulo){
+            const html = `
+                <li class="item">
+                    <p>${titulo}</p>
+                    <div class="actions">
+                        <button class="btn_item btn_editar">editar</button>
+                        <button class="btn_item btn_eliminar">eliminar</button>
+                    </div>
+                </li>
+            `
+
+            return html
+        }
+
+        async function getListData(){
+            try {
+                const res = await fetch(`${url_api}/tarea/lista`)
+                const data = await res.json()
+
+                if(!data.success){
+                    console.log("ERROR: ",data.messge)
+                    return {ok: false, messge: 'Ha ocurrido un error inesperado'}
+                }
+                return {ok: true, data: data.data}
+            } catch (error) {
+                console.log("error get data: ",error)
+            }
+        }
+
+    </script>
+
+</body>
+</html>
