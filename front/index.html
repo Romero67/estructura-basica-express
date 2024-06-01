@@ -52,6 +52,9 @@
 
 
     <style>
+        #audio_hecho{
+            display: none;
+        }
 
         .loader{
             display: flex;
@@ -272,12 +275,26 @@
         const url_api = 'http://localhost:5000'
         window.onload = initApp()
         let TAREAS = null
+        const soundDone = 'hecho.mp3'
+        const soundUnDone = 'no_hecho.mp3'
+        const soundCreateItem = 'crear_item.mp3'
 
         async function initApp(){
 
             await initList()
             initForm()
 
+        }
+
+        function playSound(name){
+            var sound = new Audio("assets/" + name)
+
+            if(!sound){
+                console.log("no hay sonido loco")
+                return
+            }
+
+            sound.play()
         }
 
         function initForm(){
@@ -328,6 +345,8 @@
                 console.log(res.messge)
                 return
             }
+
+            playSound(soundCreateItem)
 
             cleanInput(inputTitle)
             cleanInput(inputDescription)
@@ -439,11 +458,19 @@
                 return
             }
 
+            // busco la tarea
             const tarea = TAREAS.find(x => x._id == idTarea)
+            //creo el body
             const body = {hecho: !tarea.hecho}
 
-            console.log("body: ",body)
+            //play sound
+            if(tarea.hecho){
+                playSound(soundUnDone)
+            }else{
+                playSound(soundDone)
+            }
 
+            //le pego a la api
             const res = await fetch(`${url_api}/tarea/actualizar/${idTarea}`,{
                 method: 'PUT',
                 headers: {
