@@ -40,6 +40,10 @@
                     <!-- ESTO SE LLENA CON LOS DATOS DEL BACKEND -->
                 </ul>
 
+                <div class="loader hidden">
+                    <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+                </div>
+
             </div>
 
         </div>
@@ -48,6 +52,31 @@
 
 
     <style>
+
+        .loader{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .loader.hidden{
+            display: none;
+        }
+
+        .item .mask, .item .line{
+            position: absolute;
+        }
+        .item.hecho .mask{
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,.2);
+            left: 0;
+            border-radius: 8px;
+        }
+        .item.hecho .line{
+            width: 95%;
+            border: 1px solid gray;
+            left: 2.5%;
+        }
 
         .item .actions{
             flex: 1;
@@ -93,6 +122,7 @@
             border-radius: 6px;
             cursor: pointer;
             column-gap: 5px;
+            position: relative;
         }
 
         .item:hover{
@@ -192,6 +222,49 @@
                 font-size: 42px;
             }
         }
+
+        
+        .lds-ring,
+        .lds-ring div {
+            box-sizing: border-box;
+        }
+        .lds-ring {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+        .lds-ring div {
+            box-sizing: border-box;
+            display: block;
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            margin: 8px;
+            border: 8px solid currentColor;
+            border-radius: 50%;
+            animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            border-color: currentColor transparent transparent transparent;
+        }
+        .lds-ring div:nth-child(1) {
+            animation-delay: -0.45s;
+        }
+        .lds-ring div:nth-child(2) {
+            animation-delay: -0.3s;
+        }
+        .lds-ring div:nth-child(3) {
+            animation-delay: -0.15s;
+        }
+        @keyframes lds-ring {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+
 
     </style>
 
@@ -298,6 +371,9 @@
                 return
             }
 
+            changeVisibleLoader(true)
+            containerItems.innerHTML = ""
+
             const res = await getListData()
 
             if(!res.ok){
@@ -313,11 +389,15 @@
             let itemsHtml = ""
             TAREAS = res.data
 
+            console.log("INIT LIST: ",TAREAS)
+
             for (let i = 0; i < res.data.length; i++) {
                 const tarea = res.data[i];
                 
-                itemsHtml += getHtmlItem(tarea.titulo, tarea._id)
+                itemsHtml += getHtmlItem(tarea.titulo, tarea._id, tarea.hecho)
             }
+
+            changeVisibleLoader(false)
 
             //aqui metemos todos los items en la lista
             containerItems.innerHTML = itemsHtml
@@ -327,6 +407,59 @@
 
             //inicializamos los botones de actualizar
             initUpdateButtons()
+
+            //inicializar los items
+            initItems()
+        }
+        //inicializar los items y escuchar el evento click
+        function initItems(){
+            const items = document.querySelectorAll('.lista .items .item')
+            if(!items){
+                console.log("no hay items")
+                return
+            }
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                item.addEventListener('click', handleClickItem)
+            }
+        }
+
+        async function handleClickItem(event){
+
+            let idTarea = null
+            const isItem = event.target.classList.contains('item')
+            if(!isItem){
+                idTarea = event.target.parentElement.getAttribute('data-idtarea')
+            }else{
+                idTarea = event.target.getAttribute('data-idtarea')
+            }
+
+            if(!idTarea){
+                console.log("no hay id de tarea")
+                return
+            }
+
+            const tarea = TAREAS.find(x => x._id == idTarea)
+            const body = {hecho: !tarea.hecho}
+
+            console.log("body: ",body)
+
+            const res = await fetch(`${url_api}/tarea/actualizar/${idTarea}`,{
+                method: 'PUT',
+                headers: {
+                    "Content-Type": 'application/json'
+                },
+                body: JSON.stringify(body)
+            })
+
+            const data = await res.json()
+
+            if(data.error){
+                console.log(data.message)
+                return
+            }
+
+            await initList()
         }
 
         function initUpdateButtons(){
@@ -345,6 +478,8 @@
         }
 
         function handleClickUpdateButton(event){
+            event.stopPropagation()
+            console.log("update button click!")
             const idTarea = event.target.getAttribute('data-idtarea')
 
             const tarea = TAREAS.find(x => x._id == idTarea)
@@ -378,6 +513,8 @@
         }
 
         async function handleClickDeleteButton(event) {
+            event.stopPropagation()
+
             const idTarea = event.target.getAttribute('data-idtarea')
 
             const res = await fetch(`${url_api}/tarea/eliminar/${idTarea}`,{
@@ -398,14 +535,16 @@
             await initList()
         }
 
-        function getHtmlItem(titulo, idTarea){
+        function getHtmlItem(titulo, idTarea, hecho){
             const html = `
-                <li class="item">
+                <li class="item ${hecho?'hecho':''}" data-idtarea="${idTarea}" data-hecho="${hecho}">
                     <p>${titulo}</p>
                     <div class="actions">
                         <button class="btn_item btn_editar" data-idtarea="${idTarea}">editar</button>
                         <button class="btn_item btn_eliminar" data-idtarea="${idTarea}">eliminar</button>
                     </div>
+                    <div class="line"></div>
+                    <div class="mask"></div>
                 </li>
             `
 
@@ -424,6 +563,19 @@
                 return {ok: true, data: data.data}
             } catch (error) {
                 console.log("error get data: ",error)
+            }
+        }
+
+        function changeVisibleLoader(visible){
+            const loader = document.querySelector('.loader')
+            if(!loader){
+                console.log("no hay loader")
+                return
+            }
+            if(visible){
+                loader.classList.remove('hidden')
+            }else{
+                loader.classList.add('hidden')
             }
         }
 

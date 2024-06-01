@@ -6,9 +6,8 @@ exports.obtenerLista = async (req, res) => {
 
         const tareas = await ModelTarea.find({borrado: false})
 
-        console.log("tareas: ",tareas)
-
         return res.status(200).send({ success: true, data: tareas });
+
     } catch (error) {
         console.log("[obtenerLista] Error fatal: ", error);
         return res.status(500).send({ success: false, message: "Error en el servidor" });
@@ -73,7 +72,7 @@ exports.actualizarTarea = async (request, response) => {
 
         if(titulo) update.titulo = titulo
         if(descripcion) update.descripcion = descripcion
-        if(hecho) update.hecho = hecho
+        if(hecho || hecho === false) update.hecho = hecho
 
         await ModelTarea.updateOne(query, update)
 
