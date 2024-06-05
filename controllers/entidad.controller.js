@@ -21,6 +21,7 @@ exports.crearTarea =  async (request, response) => {
     //guardar el objeto en el array (listaEntidades) - OK
 
     try {
+        console.log('creando tarea: ',req.ip)
         const { titulo, descripcion } = request.body
 
         if(!titulo || !descripcion){
@@ -34,8 +35,6 @@ exports.crearTarea =  async (request, response) => {
             hecho: false
         })
 
-        console.log("nueva tarea: ",nuevaTarea)
-
         await nuevaTarea.save()
 
         return response.status(200).send({ success: true, data: "Tarea Creada!" });
@@ -48,6 +47,7 @@ exports.crearTarea =  async (request, response) => {
 exports.eliminarTarea = async (request, response) => {
 
     try {
+        console.log('eliminando tarea: ',req.ip)
         const { id } = request.params
 
         const query = {_id: id}
@@ -64,6 +64,7 @@ exports.eliminarTarea = async (request, response) => {
 //TODO: ACTUALIZAR TAREA
 exports.actualizarTarea = async (request, response) => {
     try {
+        console.log('actualizando tarea: ',req.ip)
         const {id} = request.params
 
         const { titulo, descripcion, hecho } = request.body
