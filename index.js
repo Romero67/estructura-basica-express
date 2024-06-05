@@ -6,6 +6,7 @@ const morgan = require('morgan')
 const app = express() //creo mi app
 const mongoose = require('mongoose')
 const path = require('path');
+const rateLimit = require('express-rate-limit')
 
 
 app.set('view engine', 'ejs');
@@ -13,6 +14,17 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Middleware para servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
+
+//limiter
+const limiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	limit: 50, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+	standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+	// store: ... , // Redis, Memcached, etc. See below.
+})
+
+app.use(limiter)
 
 //middlewares
 app.use(express.json()) //para que el servidor pueda leer el body que viene en formato json
