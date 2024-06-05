@@ -50,8 +50,67 @@
 
     </div>
 
+    <div class="container_popup hidden">
+        <div class="popup">
+            <h2 class="popup_title">Tarea</h2>
+            <div class="popup_items">
+                <div class="popup_item">
+                    <p class="popup_item_title">Titulo</p>
+                    <p class="popup_item_description">TItulo tarea</p>
+                </div>
+            </div>
+            <span class="popup_exit">X</span>
+
+        </div>
+    </div>
+
 
     <style>
+        .popup_item{
+            margin-bottom: 25px;
+        }
+        .popup_exit{
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            cursor: pointer;
+        }
+        .popup_title{
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+        .popup_item_title{
+            margin-bottom: 15px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+        .popup{
+            background: #352f5b;
+            padding: 30px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            row-gap: 20px;
+            min-width: 350px;
+            position: relative;
+        }
+        
+
+        .container_popup{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%; /* Ejemplo de ancho */
+            height: 100vh; /* Ejemplo de altura */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0,0,0,.5);
+        }
+        .container_popup.hidden{
+            display: none;
+        }
         #audio_hecho{
             display: none;
         }
@@ -283,11 +342,23 @@
 
             await initList()
             initForm()
+            initPopup()
+        }
 
+        function initPopup(){
+            initBtnExit()
+        }
+
+        function initBtnExit(){
+            const btn = document.querySelector('.popup_exit')
+
+            if(!btn) return
+
+            btn.addEventListener('click', () => {changeVisiblePopup(false)})
         }
 
         function playSound(name){
-            var sound = new Audio("assets/" + name)
+            var sound = new Audio("./assets/" + name)
 
             if(!sound){
                 console.log("no hay sonido loco")
@@ -427,9 +498,84 @@
             //inicializamos los botones de actualizar
             initUpdateButtons()
 
+            //inicializamos los botones para abrir popup
+            initShowButtons()
+
             //inicializar los items
             initItems()
         }
+        function initShowButtons(){
+            const buttons = document.querySelectorAll('.btn_ver')
+
+            if(!buttons) return
+
+            for (let i = 0; i < buttons.length; i++) {
+                const button = buttons[i];
+                
+                button.addEventListener('click', handleClickShow)
+            }
+        }
+
+        function handleClickShow(event){
+            event.stopPropagation()
+
+            const idTarea = event.target.getAttribute('data-idtarea')
+            const containerPopup = document.querySelector('.container_popup')
+
+            if(!idTarea || !containerPopup) return
+
+            const tarea = TAREAS.find(x => x._id == idTarea)
+
+            if(!tarea) return
+
+            changeVisiblePopup(true)
+
+            fillPopup(tarea)
+
+        }
+
+        function fillPopup(tarea){
+            if(!tarea || typeof(tarea) != 'object') return
+
+            const container = document.querySelector('.popup_items')
+            if(!container) return
+
+            const keys = Object.keys(tarea)
+            const availableKeys = ["titulo", "descripcion"]
+            const availableKeysAux = ["Titulo", "Descripción"]
+            let html = ""
+
+            for (let i = 0; i < availableKeys.length; i++) {
+                const key = availableKeys[i]
+                const keyAux = availableKeysAux[i]
+                
+                if(keys.includes(key)){
+                    html += getHtmlItemPopup(keyAux, tarea[key])
+                }
+            }
+
+            container.innerHTML = html
+        }
+
+        function getHtmlItemPopup(title, content){
+            return `
+                <div class="popup_item">
+                    <p class="popup_item_title">${title}: </p>
+                    <p class="popup_item_description">${content}</p>
+                </div>
+            `
+        }
+
+        function changeVisiblePopup(visible){
+            const containerPopup = document.querySelector('.container_popup')
+
+            if(visible){
+                containerPopup.classList.remove('hidden')
+            }else{
+                containerPopup.classList.add('hidden')
+            }
+        }
+
         //inicializar los items y escuchar el evento click
         function initItems(){
             const items = document.querySelectorAll('.lista .items .item')
@@ -569,6 +715,7 @@
                     <div class="actions">
                         <button class="btn_item btn_editar" data-idtarea="${idTarea}">editar</button>
                         <button class="btn_item btn_eliminar" data-idtarea="${idTarea}">eliminar</button>
+                        <button class="btn_item btn_ver" data-idtarea="${idTarea}">ver</button>
                     </div>
                     <div class="line"></div>
                     <div class="mask"></div>

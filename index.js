@@ -5,6 +5,14 @@ const { config } = require('./config') //importo mi configuracion
 const morgan = require('morgan')
 const app = express() //creo mi app
 const mongoose = require('mongoose')
+const path = require('path');
+
+
+app.set('view engine', 'ejs');
+app.set('views', './views');
+
+// Middleware para servir archivos estáticos
+app.use(express.static(path.join(__dirname, 'public')));
 
 //middlewares
 app.use(express.json()) //para que el servidor pueda leer el body que viene en formato json
@@ -13,6 +21,9 @@ app.use(morgan('dev')) //para que muestre en consola información de la petició
 
 //aqui van las rutas
 app.use('/tarea', router)
+app.use('/', (request, response) => {
+    response.render('index', { title: 'Hey', message: 'Hello there!' });
+})
 
 
 //conexión a la db
