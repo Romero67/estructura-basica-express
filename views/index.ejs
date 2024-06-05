@@ -331,7 +331,7 @@
     </style>
 
     <script>
-        const url_api = 'http://localhost:5000'
+        const url_api = ''
         window.onload = initApp()
         let TAREAS = null
         const soundDone = 'hecho.mp3'
@@ -466,7 +466,8 @@
 
             const res = await getListData()
 
-            if(!res.ok){
+
+            if(!res || !res.ok){
                 console.log(res.messge)
                 return
             }
