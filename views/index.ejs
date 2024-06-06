@@ -493,7 +493,7 @@
             changeVisibleLoader(false)
 
             //aqui metemos todos los items en la lista
-            containerItems.innerHTML =  DOMPurify.sanitize(itemsHtml)
+            containerItems.innerHTML =  DOMPurify.sanitize(itemsHtml, {ALLOWED_TAGS: [], ALLOWED_ATTR: []})
 
             //inicializar los botones eliminar
             initDeleteButtons()
@@ -557,7 +557,7 @@
                 }
             }
 
-            container.innerHTML =  DOMPurify.sanitize(html)
+            container.innerHTML =  DOMPurify.sanitize(html, {ALLOWED_TAGS: [], ALLOWED_ATTR: []})
         }
 
         function getHtmlItemPopup(title, content){
