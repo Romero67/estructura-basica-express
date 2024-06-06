@@ -24,7 +24,7 @@ const limiter = rateLimit({
 	// store: ... , // Redis, Memcached, etc. See below.
 })
 
-app.use(limiter)
+// app.use(limiter)
 
 //middlewares
 app.use(express.json()) //para que el servidor pueda leer el body que viene en formato json
