@@ -493,7 +493,7 @@
             changeVisibleLoader(false)
 
             //aqui metemos todos los items en la lista
-            containerItems.innerHTML =  DOMPurify.sanitize(itemsHtml, {ALLOWED_TAGS: [], ALLOWED_ATTR: []})
+            containerItems.innerHTML = itemsHtml
 
             //inicializar los botones eliminar
             initDeleteButtons()
@@ -557,14 +557,14 @@
                 }
             }
 
-            container.innerHTML =  DOMPurify.sanitize(html, {ALLOWED_TAGS: [], ALLOWED_ATTR: []})
+            container.innerHTML = html
         }
 
         function getHtmlItemPopup(title, content){
             return `
                 <div class="popup_item">
-                    <p class="popup_item_title">${title}: </p>
-                    <p class="popup_item_description">${content}</p>
+                    <p class="popup_item_title">${DOMPurify.sanitize(title, {ALLOWED_TAGS: [], ALLOWED_ATTR: []})}: </p>
+                    <p class="popup_item_description">${DOMPurify.sanitize(content, {ALLOWED_TAGS: [], ALLOWED_ATTR: []})}</p>
                 </div>
             `
         }
@@ -714,7 +714,7 @@
         function getHtmlItem(titulo, idTarea, hecho){
             const html = `
                 <li class="item ${hecho?'hecho':''}" data-idtarea="${idTarea}" data-hecho="${hecho}">
-                    <p>${titulo}</p>
+                    <p>${DOMPurify.sanitize(titulo, {ALLOWED_TAGS: [], ALLOWED_ATTR: []})}</p>
                     <div class="actions">
                         <button class="btn_item btn_editar" data-idtarea="${idTarea}">editar</button>
                         <button class="btn_item btn_eliminar" data-idtarea="${idTarea}">eliminar</button>
